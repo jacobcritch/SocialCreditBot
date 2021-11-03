@@ -15,6 +15,8 @@
 
 7. Modify the `leaderUsernames` dictionary to assign who gets ultimate power.
 
-8. Run `python3 echobot.py`
+8. Change the filepaths to reflect your working directory.
 
-9. Test out the bot by talking to it in a Telegram chat.
+9. Run `python3 echobot.py`.
+
+10. Test out the bot by talking to it in a Telegram chat.
