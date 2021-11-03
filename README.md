@@ -13,6 +13,8 @@
 
 6. In `db.json`, make any changes you want to the initial database (more names, different values, etc.).
 
-7. Run `python3 echobot.py`
+7. Modify the `leaderUsernames` dictionary to assign who gets ultimate power.
 
-8. Test out the bot by talking to it in a Telegram chat.
+8. Run `python3 echobot.py`
+
+9. Test out the bot by talking to it in a Telegram chat.
