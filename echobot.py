@@ -1,19 +1,9 @@
 #!/usr/bin/env python
 # pylint: disable=C0116,W0613
-# This program is dedicated to the public domain under the CC0 license.
-
-"""
-Simple Bot to reply to Telegram messages.
-First, a few handler functions are defined. Then, those functions are passed to
-the Dispatcher and registered at their respective places.
-Then, the bot is started and runs until we press Ctrl-C on the command line.
-Usage:
-Basic Echobot example, repeats messages.
-Press Ctrl-C on the command line or send a signal to the process to stop the
-bot.
-"""
 
 import logging
+import json
+from time import sleep
 from telegram import Update, ForceReply
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
@@ -26,7 +16,9 @@ logger = logging.getLogger(__name__)
 
 
 # # #   Members   # # #
-db = {"mk": 100, "jewke": 100, "dave": 100, "oob": 100, "coon": 100}
+token = ""
+db = {}
+
 leaderUsernames = {"Dear_LeaderMK", "Jewkorius"}
 # # #                # # #
 
@@ -41,25 +33,43 @@ def list_all(update: Update, context: CallbackContext) -> None:
     result = ""
     for key, value in db.items():
         result += key + ": " + str(value) + " credits\n"
-        
+    
     update.message.reply_text(result)
 
 def add(update: Update, context: CallbackContext) -> None:
     user = context.args[0].lower()
-    if (not validate(update, context)): return
+    if (not validate_add_remove(update, context)): return
     else:
         creds = abs(int(context.args[1]))
         db[user] += creds
         update.message.reply_text("Gave " + user + " " + str(creds) + " credits. 最尊貴！")
+        save_db()
+        sleep(2)
 
 def remove(update: Update, context: CallbackContext) -> None:
     user = context.args[0].lower()
-    if (not validate(update, context)): return
+    if (not validate_add_remove(update, context)): return
     else:
         creds = abs(int(context.args[1]))
         db[user] -= creds
         update.message.reply_text("Deducted " + str(creds) + " from " + user + ". 可恥！")
+        save_db()
+        sleep(2)
+
+""" Must have known names for all users for this
+def donate(update: Update, context: CallbackContext) -> None:
+    donater = update.effective_user
+    user = context.args[0].lower()
+    creds = context.args[1]
+    if (not is_user_valid(user) or not is_credits_valid(creds)): return
+    else:
+        creds = abs(int(creds))
+        db[user] -= creds
+        update.message.reply_text("Deducted " + str(creds) + " from " + user + ". 可恥！")
+        save_db()
+"""
 # # #                # # #
+
 
 
 # # #   Replies   # # #
@@ -79,7 +89,7 @@ def reply_only_leader_can_update(update: Update):
 
 
 # # #   Validation   # # #
-def validate(update: Update, context: CallbackContext) -> bool:
+def validate_add_remove(update: Update, context: CallbackContext) -> bool:
     user = context.args[0].lower()
     creds = context.args[1]
 
@@ -117,11 +127,38 @@ def is_user_leader(name: str) -> bool:
 # # #                # # #
 
 
+
+# # #   Database mutations   # # #
+def save_db():
+    with open("/root/SocialCreditBot/db.json", "w") as f:
+        json.dump(db, f)
+# # #                # # #
+
+
+
+# # #   Config   # # #
+def load_token_file() -> str:
+    with open("/root/SocialCreditBot/config.json") as f:
+        data = json.load(f)
+        return data["token"]
+    
+def load_db_file() -> dict:
+    with open("/root/SocialCreditBot/db.json") as f:
+        data = json.load(f)
+        return data
+# # #                # # #
+
+
 # # #   Setup   # # #
 def main() -> None:
     """Start the bot."""
+    global token, db
     # Create the Updater and pass it your bot's token.
-    updater = Updater("2061370543:AAF_UaBN4Ye5wES45wsmtFPKsUm625jnTlI")
+    token = load_token_file()
+    sleep(2)
+    db = load_db_file()
+    sleep(2)
+    updater = Updater(token)
 
     # Get the dispatcher to register handlers
     dispatcher = updater.dispatcher
